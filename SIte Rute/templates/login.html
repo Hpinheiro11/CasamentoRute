@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/loginstyle.css">
+    <title>EPFF Madeira - Login</title>
+</head>
+
+<body>
+    <div class="logo">
+        <a href="{{ url_for('index') }}">
+            <img src="/static/logo1.png" alt="Logo Emprego">
+        </a>
+    </div>
+
+    <h1>Iniciar Sessão</h1>
+
+    {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+
+    <form action="{{ url_for('login') }}" method="POST">
+        <label for="email">E-mail</label><br>
+        <input type="email" name="email" id="email" required><br>
+
+        <label for="password">Senha</label><br>
+        <input type="password" name="password" id="password" required><br>
+
+        <label for="recordar">Guardar senha</label>
+        <input type="checkbox" name="recordar" id="recordar"><br>
+
+        <input type="submit" value="Iniciar Sessão">
+    </form>
+</body>
+</html>
