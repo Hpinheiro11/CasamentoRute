@@ -15,8 +15,9 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    perspective: 1000px;
   }
-  #intro, #convite, #videoContainer {
+  #intro, #videoContainer {
     margin: 20px;
   }
   #dados {
@@ -29,7 +30,7 @@
     0% { transform: rotate(-7deg); }
     100% { transform: rotate(7deg); }
   }
-  #convite, #videoContainer {
+  #videoContainer {
     display: none;
   }
   #info {
@@ -43,41 +44,137 @@
     box-shadow: 0 0 10px rgba(42,93,52,0.6);
   }
 
-  /* Estilo requintado para o convite */
-  #convite {
-    background: #fdfaf6;
-    border: 2px solid #8b6d4e;
-    border-radius: 20px;
-    max-width: 450px;
+  /* Cubo 3D para o convite */
+  #conviteContainer {
+    width: 300px;
+    height: 300px;
     margin: 40px auto;
-    padding: 30px 40px;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: rotateCube 15s linear infinite;
+  }
+
+  @keyframes rotateCube {
+    from {
+      transform: rotateX(-15deg) rotateY(0deg);
+    }
+    to {
+      transform: rotateX(-15deg) rotateY(360deg);
+    }
+  }
+
+  .face {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 20px;
+    border: 2px solid #8b6d4e;
+    background: #fdfaf6;
     box-shadow: 0 8px 25px rgba(139,109,78,0.3);
     color: #5b4636;
     font-family: 'Georgia', serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 40px;
+    box-sizing: border-box;
+  }
+
+  /* Face frontal - o convite */
+  #faceFront {
+    transform: translateZ(150px);
     text-align: center;
   }
-  #convite h1 {
-    font-size: 2.8rem;
+  #faceFront h1 {
+    font-size: 2.2rem;
     margin-bottom: 10px;
     font-weight: 700;
     letter-spacing: 3px;
     text-transform: uppercase;
     color: #7a5e3c;
   }
-  #convite p {
-    font-size: 1.15rem;
-    line-height: 1.6;
-    margin: 15px 0;
+  #faceFront p {
+    font-size: 1rem;
+    line-height: 1.4;
+    margin: 10px 0;
   }
-  #convite p strong {
-    font-size: 1.3rem;
+  #faceFront p strong {
+    font-size: 1.15rem;
     font-weight: 700;
     color: #8b6d4e;
   }
-  #convite p.italic {
+  #faceFront p.italic {
     font-style: italic;
     color: #a69072;
   }
+
+  /* Outras faces só com pontos para parecer dado */
+  .face.back {
+    transform: rotateY(180deg) translateZ(150px);
+    background: #fdfaf6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .face.back::before {
+    content: "• •";
+    font-size: 3rem;
+    color: #8b6d4e;
+    letter-spacing: 40px;
+  }
+  .face.right {
+    transform: rotateY(90deg) translateZ(150px);
+    background: #fdfaf6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .face.right::before {
+    content: "•";
+    font-size: 4rem;
+    color: #8b6d4e;
+  }
+  .face.left {
+    transform: rotateY(-90deg) translateZ(150px);
+    background: #fdfaf6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .face.left::before {
+    content: "• • •";
+    font-size: 3rem;
+    color: #8b6d4e;
+    letter-spacing: 25px;
+  }
+  .face.top {
+    transform: rotateX(90deg) translateZ(150px);
+    background: #fdfaf6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .face.top::before {
+    content: "• • • •";
+    font-size: 3rem;
+    color: #8b6d4e;
+    letter-spacing: 20px;
+  }
+  .face.bottom {
+    transform: rotateX(-90deg) translateZ(150px);
+    background: #fdfaf6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .face.bottom::before {
+    content: "• • • • •";
+    font-size: 3rem;
+    color: #8b6d4e;
+    letter-spacing: 15px;
+  }
+
 </style>
 </head>
 <body>
@@ -92,12 +189,20 @@
   <video id="dadosVideo" src="dados.mp4" playsinline></video>
 </div>
 
-<div id="convite">
-  <h1>Convite Especial</h1>
-  <p>É com imensa alegria que <strong>Rute Pinheiro</strong> e <strong>Diogo Andrade</strong> <br>convidam-te para celebrares a união do seu amor.</p>
-  <p class="italic">"O amor verdadeiro é a jornada mais bela que podemos partilhar."</p>
-  <p>Junta-te a nós no dia <strong>27 de Junho</strong>, em <strong>Cantanhede</strong>, para uma cerimónia íntima e uma festa inesquecível.</p>
-  <p>Esperamos contar contigo para tornar este dia ainda mais especial.</p>
+<!-- Cubo 3D -->
+<div id="conviteContainer" style="display:none;">
+  <div class="face front" id="faceFront">
+    <h1>Convite Especial</h1>
+    <p>É com imensa alegria que <strong>Rute Pinheiro</strong> e <strong>Diogo Andrade</strong> <br>convidam-te para celebrares a união do seu amor.</p>
+    <p class="italic">"O amor verdadeiro é a jornada mais bela que podemos partilhar."</p>
+    <p>Junta-te a nós no dia <strong>27 de Junho</strong>, em <strong>Cantanhede</strong>, para uma cerimónia íntima e uma festa inesquecível.</p>
+    <p>Esperamos contar contigo para tornar este dia ainda mais especial.</p>
+  </div>
+  <div class="face back"></div>
+  <div class="face right"></div>
+  <div class="face left"></div>
+  <div class="face top"></div>
+  <div class="face bottom"></div>
 </div>
 
 <div id="info">Se o abanar não funcionar, toca 3 vezes rápido para abrir o convite.</div>
@@ -115,7 +220,7 @@ function resetTaps() {
 function revealInvite() {
   document.getElementById('intro').style.display = 'none';
   document.getElementById('videoContainer').style.display = 'none';
-  document.getElementById('convite').style.display = 'block';
+  document.getElementById('conviteContainer').style.display = 'block';
   document.getElementById('info').style.display = 'none';
 }
 
@@ -187,4 +292,3 @@ window.addEventListener('click', () => {
 
 </body>
 </html>
-
