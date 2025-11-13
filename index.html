@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -71,6 +70,7 @@
 <div id="intro">
   <h2>🎲 Abana o teu telemóvel para revelar o convite 🎲</h2>
   <div id="dados">🎲🎲</div>
+  <p><em>(Toca no ecrã para ativar os sensores antes de abanar)</em></p>
 </div>
 
 <div id="convite">
@@ -86,24 +86,32 @@
 let threshold = 15;
 let revealed = false;
 
-function pedirPermissao() {
-  if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    DeviceMotionEvent.requestPermission().catch(() => {}).then(permissionState => {
-      if(permissionState === 'granted') {
-        window.addEventListener('devicemotion', motionHandler);
-      }
-    });
+function startMotionListening() {
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    // iOS 13+ permission flow
+    DeviceMotionEvent.requestPermission()
+      .then(response => {
+        if (response === 'granted') {
+          window.addEventListener('devicemotion', motionHandler);
+          alert('Sensores ativados! Agora abana o telemóvel para revelar o convite.');
+        } else {
+          alert('Permissão para sensores de movimento negada.');
+        }
+      })
+      .catch(console.error);
   } else {
+    // Outros browsers
     window.addEventListener('devicemotion', motionHandler);
+    alert('Sensores ativados! Agora abana o telemóvel para revelar o convite.');
   }
 }
 
 function motionHandler(event) {
   if (revealed) return;
   let acc = event.accelerationIncludingGravity;
-  if(!acc) return;
+  if (!acc) return;
   let total = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
-  if(total > threshold) {
+  if (total > threshold) {
     revealed = true;
     document.getElementById('intro').style.display = 'none';
     document.getElementById('convite').style.display = 'block';
@@ -111,7 +119,10 @@ function motionHandler(event) {
   }
 }
 
-window.addEventListener('click', pedirPermissao);
+// Pede permissão ao toque
+window.addEventListener('click', () => {
+  startMotionListening();
+});
 </script>
 
 </body>
