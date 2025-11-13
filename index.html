@@ -32,9 +32,9 @@
   #convite {
     display: none;
   }
-  #debug {
+  #info {
     margin-top: 30px;
-    font-size: 14px;
+    font-size: 16px;
     color: #555;
   }
 </style>
@@ -42,65 +42,43 @@
 <body>
 
 <div id="intro">
-  <h2>🎲 Abana o teu telemóvel para revelar o convite 🎲</h2>
+  <h2>🎲 Toca 3 vezes rapidamente para revelar o convite 🎲</h2>
   <div id="dados">🎲🎲</div>
-  <p><em>(Toca no ecrã para ativar os sensores)</em></p>
 </div>
 
 <div id="convite">
   <h1>🎉 Estás convidado! 🎉</h1>
-  <p>Prepara os dados, abana o telemóvel e vem jogar connosco o jogo do amor! 💚</p>
+  <p>Prepara os dados e vem jogar connosco o jogo do amor! 💚</p>
   <p><strong>Rute Pinheiro & Diogo Andrade</strong></p>
   <p>Casam-se a 27 de Junho em Cantanhede — e a festa vai ser de outro nível!</p>
 </div>
 
-<div id="debug">Aguardando movimento...</div>
+<div id="info">Toca rapidamente 3 vezes em qualquer lugar da tela para abrir o convite.</div>
 
 <script>
-let threshold = 12;  // Ajustado para ser mais sensível
-let revealed = false;
+let tapCount = 0;
+let tapTimeout = null;
 
-function startMotionListening() {
-  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    DeviceMotionEvent.requestPermission()
-      .then(response => {
-        if (response === 'granted') {
-          window.addEventListener('devicemotion', motionHandler);
-          document.getElementById('debug').innerText = 'Sensores ativados! Abana o telemóvel.';
-        } else {
-          document.getElementById('debug').innerText = 'Permissão negada para sensores de movimento.';
-        }
-      })
-      .catch(err => {
-        document.getElementById('debug').innerText = 'Erro ao pedir permissão: ' + err;
-      });
-  } else {
-    window.addEventListener('devicemotion', motionHandler);
-    document.getElementById('debug').innerText = 'Sensores ativados! Abana o telemóvel.';
-  }
+function resetTaps() {
+  tapCount = 0;
 }
 
-function motionHandler(event) {
-  if (revealed) return;
-
-  let acc = event.accelerationIncludingGravity;
-  if (!acc) return;
-
-  let total = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
-  document.getElementById('debug').innerText = 'Movimento detectado: ' + total.toFixed(2);
-
-  if (total > threshold) {
-    revealed = true;
-    document.getElementById('intro').style.display = 'none';
-    document.getElementById('convite').style.display = 'block';
-  }
+function revealInvite() {
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('convite').style.display = 'block';
+  document.getElementById('info').style.display = 'none';
 }
 
-window.addEventListener('click', () => {
-  startMotionListening();
+window.addEventListener('touchstart', () => {
+  tapCount++;
+  if(tapTimeout) clearTimeout(tapTimeout);
+  tapTimeout = setTimeout(resetTaps, 600);
+
+  if(tapCount === 3) {
+    revealInvite();
+  }
 });
 </script>
 
 </body>
 </html>
-
