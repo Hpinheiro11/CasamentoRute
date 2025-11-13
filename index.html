@@ -32,16 +32,21 @@
   }
   #videoContainer {
     display: none;
+    margin: 40px auto;
+    text-align: center;
+  }
+  #dadosVideo {
+    width: 320px;
+    height: 320px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(42,93,52,0.6);
+    display: block;
+    margin: 0 auto;
   }
   #info {
     margin-top: 30px;
     font-size: 16px;
     color: #555;
-  }
-  video {
-    max-width: 300px;
-    border-radius: 12px;
-    box-shadow: 0 0 10px rgba(42,93,52,0.6);
   }
 
   /* Cubo 3D estático para o convite */
@@ -52,6 +57,7 @@
     position: relative;
     transform-style: preserve-3d;
     transform: rotateX(-15deg) rotateY(20deg); /* leve inclinação para 3D */
+    display: none; /* começa escondido */
   }
 
   .face {
@@ -176,11 +182,11 @@
 </div>
 
 <div id="videoContainer">
-  <video id="dadosVideo" src="dados.mp4" playsinline></video>
+  <video id="dadosVideo" src="dados.mp4" playsinline muted></video>
 </div>
 
 <!-- Cubo 3D estático -->
-<div id="conviteContainer" style="display:none;">
+<div id="conviteContainer">
   <div class="face front" id="faceFront">
     <h1>Convite Especial</h1>
     <p>É com imensa alegria que <strong>Rute Pinheiro</strong> e <strong>Diogo Andrade</strong> <br>convidam-te para celebrares a união do seu amor.</p>
@@ -218,7 +224,10 @@ function playVideoThenReveal() {
   const videoContainer = document.getElementById('videoContainer');
   const video = document.getElementById('dadosVideo');
   videoContainer.style.display = 'block';
-  video.play();
+  video.play().catch(e => {
+    console.log('Erro a reproduzir o vídeo:', e);
+    revealInvite();
+  });
   video.onended = () => {
     revealInvite();
   };
