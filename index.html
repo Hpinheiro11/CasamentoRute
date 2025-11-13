@@ -15,7 +15,6 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    perspective: 1000px;
   }
   #intro, #videoContainer {
     margin: 20px;
@@ -49,127 +48,82 @@
     color: #555;
   }
 
-  /* Cubo 3D estático para o convite */
+  /* Convite em "face de dado" simplificada */
   #conviteContainer {
-    width: 320px;
-    height: 320px;
+    width: 340px;
+    max-height: 400px;
     margin: 40px auto;
-    position: relative;
-    transform-style: preserve-3d;
-    transform: rotateX(-15deg) rotateY(20deg); /* leve inclinação para 3D */
-    display: none; /* começa escondido */
-  }
-
-  .face {
-    position: absolute;
-    width: 320px;
-    height: 320px;
-    border-radius: 20px;
-    border: 2px solid #8b6d4e;
     background: #fdfaf6;
-    box-shadow: 0 8px 25px rgba(139,109,78,0.3);
-    color: #5b4636;
-    font-family: 'Georgia', serif;
-    box-sizing: border-box;
+    border-radius: 30px;
+    border: 3px solid #8b6d4e;
+    box-shadow:
+      inset 0 0 20px rgba(139,109,78,0.2),
+      0 12px 25px rgba(139,109,78,0.4);
+    padding: 40px 50px;
+    position: relative;
     overflow-y: auto;
-    padding: 30px 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    font-family: 'Georgia', serif;
+    color: #5b4636;
+    box-sizing: border-box;
   }
 
-  /* Face frontal - o convite */
-  #faceFront {
-    transform: translateZ(160px);
-    text-align: center;
+  /* Pontos do dado nos cantos para sugerir o dado */
+  #conviteContainer::before,
+  #conviteContainer::after,
+  #conviteContainer > .dot1,
+  #conviteContainer > .dot2,
+  #conviteContainer > .dot3 {
+    content: "•";
+    position: absolute;
+    font-size: 2.8rem;
+    color: #8b6d4e;
+    text-shadow: 0 0 1px #5b4636;
   }
-  #faceFront h1 {
-    font-size: 2.2rem;
-    margin-bottom: 10px;
+
+  #conviteContainer::before {
+    top: 20px;
+    left: 20px;
+  }
+  #conviteContainer::after {
+    bottom: 20px;
+    right: 20px;
+  }
+  /* Pontos laterais para efeito */
+  .dot1 {
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+  }
+  .dot2 {
+    top: 80px;
+    right: 10px;
+  }
+  .dot3 {
+    bottom: 80px;
+    left: 10px;
+  }
+
+  /* Conteúdo do convite */
+  #conviteContainer h1 {
+    font-size: 2.4rem;
+    margin-bottom: 15px;
     font-weight: 700;
-    letter-spacing: 3px;
+    letter-spacing: 4px;
     text-transform: uppercase;
     color: #7a5e3c;
   }
-  #faceFront p {
-    font-size: 1rem;
-    line-height: 1.4;
-    margin: 10px 0;
+  #conviteContainer p {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    margin: 12px 0;
   }
-  #faceFront p strong {
-    font-size: 1.15rem;
+  #conviteContainer p strong {
     font-weight: 700;
     color: #8b6d4e;
   }
-  #faceFront p.italic {
+  #conviteContainer p.italic {
     font-style: italic;
     color: #a69072;
-  }
-
-  /* Outras faces do dado com pontos */
-  .face.back {
-    transform: rotateY(180deg) translateZ(160px);
-    background: #fdfaf6;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .face.back::before {
-    content: "• •";
-    font-size: 3rem;
-    color: #8b6d4e;
-    letter-spacing: 40px;
-  }
-  .face.right {
-    transform: rotateY(90deg) translateZ(160px);
-    background: #fdfaf6;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .face.right::before {
-    content: "•";
-    font-size: 4rem;
-    color: #8b6d4e;
-  }
-  .face.left {
-    transform: rotateY(-90deg) translateZ(160px);
-    background: #fdfaf6;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .face.left::before {
-    content: "• • •";
-    font-size: 3rem;
-    color: #8b6d4e;
-    letter-spacing: 25px;
-  }
-  .face.top {
-    transform: rotateX(90deg) translateZ(160px);
-    background: #fdfaf6;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .face.top::before {
-    content: "• • • •";
-    font-size: 3rem;
-    color: #8b6d4e;
-    letter-spacing: 20px;
-  }
-  .face.bottom {
-    transform: rotateX(-90deg) translateZ(160px);
-    background: #fdfaf6;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .face.bottom::before {
-    content: "• • • • •";
-    font-size: 3rem;
-    color: #8b6d4e;
-    letter-spacing: 15px;
   }
 </style>
 </head>
@@ -185,20 +139,15 @@
   <video id="dadosVideo" src="dados.mp4" playsinline muted></video>
 </div>
 
-<!-- Cubo 3D estático -->
-<div id="conviteContainer">
-  <div class="face front" id="faceFront">
-    <h1>Convite Especial</h1>
-    <p>É com imensa alegria que <strong>Rute Pinheiro</strong> e <strong>Diogo Andrade</strong> <br>convidam-te para celebrares a união do seu amor.</p>
-    <p class="italic">"O amor verdadeiro é a jornada mais bela que podemos partilhar."</p>
-    <p>Junta-te a nós no dia <strong>27 de Junho</strong>, em <strong>Cantanhede</strong>, para uma cerimónia íntima e uma festa inesquecível.</p>
-    <p>Esperamos contar contigo para tornar este dia ainda mais especial.</p>
-  </div>
-  <div class="face back"></div>
-  <div class="face right"></div>
-  <div class="face left"></div>
-  <div class="face top"></div>
-  <div class="face bottom"></div>
+<div id="conviteContainer" style="display:none;">
+  <span class="dot1"></span>
+  <span class="dot2"></span>
+  <span class="dot3"></span>
+  <h1>Convite Especial</h1>
+  <p>É com imensa alegria que <strong>Rute Pinheiro</strong> e <strong>Diogo Andrade</strong><br>convidam-te para celebrares a união do seu amor.</p>
+  <p class="italic">"O amor verdadeiro é a jornada mais bela que podemos partilhar."</p>
+  <p>Junta-te a nós no dia <strong>27 de Junho</strong>, em <strong>Cantanhede</strong>, para uma cerimónia íntima e uma festa inesquecível.</p>
+  <p>Esperamos contar contigo para tornar este dia ainda mais especial.</p>
 </div>
 
 <div id="info">Se o abanar não funcionar, toca 3 vezes rápido para abrir o convite.</div>
