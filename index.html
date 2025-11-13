@@ -160,6 +160,8 @@
   const activateButton = document.getElementById('activateButton');
 
   function revealInvite() {
+    if (revealed) return;
+    revealed = true;
     document.getElementById('intro').style.display = 'none';
     document.getElementById('conviteContainer').style.display = 'block';
     document.getElementById('info').style.display = 'none';
@@ -173,7 +175,6 @@
 
     let total = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
     if (total > threshold) {
-      revealed = true;
       revealInvite();
     }
   }
@@ -204,12 +205,11 @@
     }
   }
 
-  // Botão para ativar sensores
   activateButton.addEventListener('click', () => {
     startMotionListening();
   });
 
-  // Fallback tap triplo para abrir convite
+  // fallback tap triplo para abrir convite
   window.addEventListener('touchstart', () => {
     if (revealed) return;
 
@@ -220,7 +220,6 @@
     }, 600);
 
     if (tapCount === 3) {
-      revealed = true;
       revealInvite();
       activateButton.style.display = 'none';
     }
@@ -229,4 +228,3 @@
 
 </body>
 </html>
-
