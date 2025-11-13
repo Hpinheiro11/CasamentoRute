@@ -135,6 +135,9 @@
   <h2>🎲 Abana o teu telemóvel para revelar o convite 🎲</h2>
   <div id="dados">🎲🎲</div>
   <button id="activateButton">Ativar Sensores</button>
+  <p id="countdown" style="font-weight:700; font-size:18px; color:#7a5e3c; margin-top:15px; display:none;">
+    A abanar... <span id="secondsLeft">5</span> segundos restantes
+  </p>
 </div>
 
 <div id="conviteContainer">
@@ -157,7 +160,15 @@
   let tapTimeout = null;
   let sensorsActivated = false;
 
+  let shakingStart = null;
+  let shakingTimer = null;
+  const requiredShakeTime = 5000; // 5 segundos
+  const allowedPause = 500; // meio segundo de pausa permitido
+  let lastShakeTime = null;
+
   const activateButton = document.getElementById('activateButton');
+  const countdown = document.getElementById('countdown');
+  const secondsLeftSpan = document.getElementById('secondsLeft');
 
   function revealInvite() {
     if (revealed) return;
@@ -167,6 +178,19 @@
     document.getElementById('info').style.display = 'none';
   }
 
+  function updateCountdown() {
+    if (!shakingStart) return;
+    const elapsed = Date.now() - shakingStart;
+    const secondsLeft = Math.max(0, Math.ceil((requiredShakeTime - elapsed) / 1000));
+    secondsLeftSpan.textContent = secondsLeft;
+  }
+
+  function resetShaking() {
+    shakingStart = null;
+    lastShakeTime = null;
+    countdown.style.display = 'none';
+  }
+
   function motionHandler(event) {
     if (revealed) return;
 
@@ -174,8 +198,27 @@
     if (!acc) return;
 
     let total = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+
+    const now = Date.now();
+
     if (total > threshold) {
+      if (!shakingStart) {
+        shakingStart = now;
+        countdown.style.display = 'block';
+        updateCountdown();
+      }
+      lastShakeTime = now;
+    } else {
+      // Se passou mais de allowedPause sem movimento acima do threshold, reset timer
+      if (lastShakeTime && now - lastShakeTime > allowedPause) {
+        resetShaking();
+      }
+    }
+
+    if (shakingStart && now - shakingStart >= requiredShakeTime) {
       revealInvite();
+    } else {
+      updateCountdown();
     }
   }
 
@@ -187,7 +230,7 @@
         .then(response => {
           if (response === 'granted') {
             window.addEventListener('devicemotion', motionHandler);
-            document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
+            document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel durante 5 segundos.';
             sensorsActivated = true;
             activateButton.style.display = 'none';
           } else {
@@ -199,7 +242,7 @@
         });
     } else {
       window.addEventListener('devicemotion', motionHandler);
-      document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
+      document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel durante 5 segundos.';
       sensorsActivated = true;
       activateButton.style.display = 'none';
     }
