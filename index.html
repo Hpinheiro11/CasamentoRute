@@ -17,23 +17,57 @@
     flex-direction: column;
     justify-content: center;
   }
+  #intro {
+    margin: 20px;
+    z-index: 10;
+  }
+  #dados {
+    font-size: 100px;
+    margin: 40px auto 0;
+    animation: tremer 0.15s infinite alternate;
+    user-select: none;
+  }
+  @keyframes tremer {
+    0% { transform: rotate(-7deg); }
+    100% { transform: rotate(7deg); }
+  }
   #threeContainer {
     width: 340px;
     height: 340px;
     margin: 40px auto;
-    pointer-events: auto; /* enable interaction */
+    pointer-events: auto;
     z-index: 5;
+    display: none; /* invisível até revelar */
+  }
+  #info {
+    margin-top: 30px;
+    font-size: 16px;
+    color: #555;
+    z-index: 10;
   }
 </style>
 </head>
 <body>
 
+<div id="intro">
+  <h2>🎲 Abana o teu telemóvel para revelar o convite 🎲</h2>
+  <div id="dados">🎲🎲</div>
+  <p><em>(Toca no ecrã para ativar os sensores)</em></p>
+</div>
+
 <div id="threeContainer"></div>
+
+<div id="info">Se o abanar não funcionar, toca 3 vezes rápido para abrir o convite.</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.min.js"></script>
 
 <script>
+  let threshold = 12;
+  let revealed = false;
+  let tapCount = 0;
+  let tapTimeout = null;
+
   // Cria a textura do convite em canvas 2D
   function createInviteTexture() {
     const width = 512;
@@ -152,9 +186,73 @@
     animate();
   }
 
-  // Inicializa já o three.js e mostra o convite
-  initThree();
+  // Inicializa o three.js e guarda referências
+  const threeApp = initThree();
+
+  // Mostrar convite 3D e esconder intro
+  function revealInvite() {
+    document.getElementById('intro').style.display = 'none';
+    document.getElementById('threeContainer').style.display = 'block';
+    document.getElementById('info').style.display = 'none';
+  }
+
+  function startMotionListening() {
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission()
+        .then(response => {
+          if (response === 'granted') {
+            window.addEventListener('devicemotion', motionHandler);
+            document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
+          } else {
+            document.getElementById('info').innerText = 'Permissão negada. Usa 3 toques rápidos para abrir.';
+          }
+        })
+        .catch(() => {
+          document.getElementById('info').innerText = 'Erro a pedir permissão. Usa 3 toques rápidos para abrir.';
+        });
+    } else {
+      window.addEventListener('devicemotion', motionHandler);
+      document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
+    }
+  }
+
+  function motionHandler(event) {
+    if (revealed) return;
+
+    let acc = event.accelerationIncludingGravity;
+    if (!acc) return;
+
+    let total = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+    if (total > threshold) {
+      revealed = true;
+      revealInvite();
+    }
+  }
+
+  // Fallback tap triplo
+  window.addEventListener('touchstart', () => {
+    if (revealed) return;
+
+    tapCount++;
+    if (tapTimeout) clearTimeout(tapTimeout);
+    tapTimeout = setTimeout(() => {
+      tapCount = 0;
+    }, 600);
+
+    if (tapCount === 3) {
+      revealed = true;
+      revealInvite();
+    }
+  });
+
+  // Ativa sensores no primeiro toque
+  window.addEventListener('click', () => {
+    if (!revealed) {
+      startMotionListening();
+    }
+  });
 </script>
 
 </body>
 </html>
+
