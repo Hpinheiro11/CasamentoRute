@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Convite Digital - Jogo do Amor</title>
+<title>Convite Digital 3D - Jogo do Amor</title>
 <style>
   body {
     margin: 0; padding: 0;
@@ -12,12 +12,14 @@
     color: #2a5d34;
     text-align: center;
     height: 100vh;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
-  #intro, #videoContainer {
+  #intro {
     margin: 20px;
+    z-index: 10;
   }
   #dados {
     font-size: 100px;
@@ -31,112 +33,26 @@
   }
   #videoContainer {
     display: none;
-    margin: 40px auto;
-    text-align: center;
+    margin: 20px auto;
   }
-  #dadosVideo {
-    width: 320px;
-    height: 320px;
+  video {
+    max-width: 320px;
     border-radius: 12px;
     box-shadow: 0 0 10px rgba(42,93,52,0.6);
-    display: block;
-    margin: 0 auto;
   }
   #info {
     margin-top: 30px;
     font-size: 16px;
     color: #555;
+    z-index: 10;
   }
-
-  /* Container do convite cubo */
-  #conviteContainer {
-    position: relative;
+  #threeContainer {
     width: 340px;
-    max-height: 420px;
+    height: 340px;
     margin: 40px auto;
-    background: #fdfaf6;
-    border-radius: 25px;
-    box-shadow:
-      0 15px 25px rgba(139,109,78,0.3);
-    padding: 40px 50px;
-    box-sizing: border-box;
-    font-family: 'Georgia', serif;
-    color: #5b4636;
-    overflow-y: auto;
+    pointer-events: auto; /* enable interaction */
+    z-index: 5;
   }
-
-  /* Face frontal do convite */
-  #conviteContent {
-    position: relative;
-    z-index: 3;
-  }
-
-  /* Linhas diagonais que simulam as arestas do cubo */
-  #conviteContainer::before,
-  #conviteContainer::after {
-    content: "";
-    position: absolute;
-    background: linear-gradient(45deg, #8b6d4e, #c8b69e);
-    box-shadow: 0 0 8px rgba(139,109,78,0.6);
-    border-radius: 2px;
-    z-index: 1;
-  }
-
-  /* Linha lateral direita (aresta vertical inclinada) */
-  #conviteContainer::before {
-    width: 8px;
-    height: 95%;
-    top: 10px;
-    right: -18px;
-    transform: skew(-25deg);
-  }
-
-  /* Linha superior (aresta horizontal inclinada) */
-  #conviteContainer::after {
-    height: 8px;
-    width: 95%;
-    top: -18px;
-    left: 10px;
-    transform: skew(25deg);
-  }
-
-  /* Linha diagonal inferior direita para fechar a "aresta" */
-  #conviteDiagonal {
-    position: absolute;
-    width: 25px;
-    height: 8px;
-    background: linear-gradient(135deg, #c8b69e, #8b6d4e);
-    box-shadow: 0 0 6px rgba(139,109,78,0.5);
-    border-radius: 2px;
-    bottom: -18px;
-    right: -18px;
-    transform: skew(25deg);
-    z-index: 1;
-  }
-
-  /* Texto */
-  #conviteContent h1 {
-    font-size: 2.4rem;
-    margin-bottom: 15px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: #7a5e3c;
-  }
-  #conviteContent p {
-    font-size: 1.1rem;
-    line-height: 1.5;
-    margin: 12px 0;
-  }
-  #conviteContent p strong {
-    font-weight: 700;
-    color: #8b6d4e;
-  }
-  #conviteContent p.italic {
-    font-style: italic;
-    color: #a69072;
-  }
-
 </style>
 </head>
 <body>
@@ -151,104 +67,224 @@
   <video id="dadosVideo" src="dados.mp4" playsinline muted></video>
 </div>
 
-<div id="conviteContainer" style="display:none;">
-  <div id="conviteContent">
-    <h1>Convite Especial</h1>
-    <p>É com imensa alegria que <strong>Rute Pinheiro</strong> e <strong>Diogo Andrade</strong><br>convidam-te para celebrares a união do seu amor.</p>
-    <p class="italic">"O amor verdadeiro é a jornada mais bela que podemos partilhar."</p>
-    <p>Junta-te a nós no dia <strong>27 de Junho</strong>, em <strong>Cantanhede</strong>, para uma cerimónia íntima e uma festa inesquecível.</p>
-    <p>Esperamos contar contigo para tornar este dia ainda mais especial.</p>
-  </div>
-  <div id="conviteDiagonal"></div>
-</div>
+<div id="threeContainer" style="display:none;"></div>
 
 <div id="info">Se o abanar não funcionar, toca 3 vezes rápido para abrir o convite.</div>
 
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.min.js"></script>
+
 <script>
-let threshold = 12;
-let revealed = false;
-let tapCount = 0;
-let tapTimeout = null;
+  let threshold = 12;
+  let revealed = false;
+  let tapCount = 0;
+  let tapTimeout = null;
 
-function resetTaps() {
-  tapCount = 0;
-}
+  // Função para criar a textura do convite usando canvas 2D
+  function createInviteTexture() {
+    const width = 512;
+    const height = 512;
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
 
-function revealInvite() {
-  document.getElementById('intro').style.display = 'none';
-  document.getElementById('videoContainer').style.display = 'none';
-  document.getElementById('conviteContainer').style.display = 'block';
-  document.getElementById('info').style.display = 'none';
-}
+    // Fundo creme suave com borda arredondada
+    ctx.fillStyle = '#fdfaf6';
+    const radius = 40;
+    ctx.beginPath();
+    ctx.moveTo(radius, 0);
+    ctx.lineTo(width - radius, 0);
+    ctx.quadraticCurveTo(width, 0, width, radius);
+    ctx.lineTo(width, height - radius);
+    ctx.quadraticCurveTo(width, height, width - radius, height);
+    ctx.lineTo(radius, height);
+    ctx.quadraticCurveTo(0, height, 0, height - radius);
+    ctx.lineTo(0, radius);
+    ctx.quadraticCurveTo(0, 0, radius, 0);
+    ctx.closePath();
+    ctx.fill();
 
-function playVideoThenReveal() {
-  const videoContainer = document.getElementById('videoContainer');
-  const video = document.getElementById('dadosVideo');
-  videoContainer.style.display = 'block';
-  video.play().catch(e => {
-    console.log('Erro a reproduzir o vídeo:', e);
-    revealInvite();
-  });
-  video.onended = () => {
-    revealInvite();
-  };
-}
+    // Bordas com sombra suave
+    ctx.shadowColor = 'rgba(139,109,78,0.3)';
+    ctx.shadowBlur = 10;
+    ctx.strokeStyle = '#8b6d4e';
+    ctx.lineWidth = 6;
+    ctx.stroke();
 
-function startMotionListening() {
-  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    DeviceMotionEvent.requestPermission()
-      .then(response => {
-        if (response === 'granted') {
-          window.addEventListener('devicemotion', motionHandler);
-          document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
-        } else {
-          document.getElementById('info').innerText = 'Permissão negada. Usa 3 toques rápidos para abrir.';
-        }
-      })
-      .catch(err => {
-        document.getElementById('info').innerText = 'Erro a pedir permissão. Usa 3 toques rápidos para abrir.';
-      });
-  } else {
-    window.addEventListener('devicemotion', motionHandler);
-    document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
+    ctx.shadowColor = 'transparent'; // reset shadow
+
+    // Texto do convite
+    ctx.fillStyle = '#5b4636';
+    ctx.font = 'bold 36px Georgia';
+    ctx.textAlign = 'center';
+    ctx.fillText('Convite Especial', width / 2, 70);
+
+    ctx.font = '22px Georgia';
+    ctx.fillText('É com imensa alegria que', width / 2, 130);
+    ctx.fillText('Rute Pinheiro e Diogo Andrade', width / 2, 160);
+    ctx.fillText('convidam-te para celebrares', width / 2, 190);
+    ctx.fillText('a união do seu amor.', width / 2, 220);
+
+    ctx.font = 'italic 20px Georgia';
+    ctx.fillStyle = '#a69072';
+    ctx.fillText('"O amor verdadeiro é a', width / 2, 260);
+    ctx.fillText('jornada mais bela que podemos partilhar."', width / 2, 290);
+
+    ctx.fillStyle = '#5b4636';
+    ctx.font = '22px Georgia';
+    ctx.fillText('Junta-te a nós no dia', width / 2, 340);
+    ctx.fillText('27 de Junho, em Cantanhede,', width / 2, 370);
+    ctx.fillText('para uma cerimónia íntima e', width / 2, 400);
+    ctx.fillText('uma festa inesquecível.', width / 2, 430);
+
+    ctx.fillText('Esperamos contar contigo', width / 2, 470);
+    ctx.fillText('para tornar este dia especial.', width / 2, 500);
+
+    return new THREE.CanvasTexture(canvas);
   }
-}
 
-function motionHandler(event) {
-  if (revealed) return;
+  function initThree() {
+    const container = document.getElementById('threeContainer');
+    const width = container.clientWidth;
+    const height = container.clientHeight;
 
-  let acc = event.accelerationIncludingGravity;
-  if (!acc) return;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 1000);
+    camera.position.set(0, 0, 4);
 
-  let total = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
-  if (total > threshold) {
-    revealed = true;
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(width, height);
+    container.appendChild(renderer.domElement);
+
+    // Luzes suaves para realçar o cubo
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    directionalLight.position.set(5, 5, 5);
+    scene.add(directionalLight);
+
+    // Criar textura com convite
+    const inviteTexture = createInviteTexture();
+
+    // Materiais das faces: frente com o convite, outras neutras
+    const materials = [
+      new THREE.MeshStandardMaterial({ color: '#c8b69e' }), // direita
+      new THREE.MeshStandardMaterial({ color: '#8b6d4e' }), // esquerda
+      new THREE.MeshStandardMaterial({ color: '#bfae8f' }), // cima
+      new THREE.MeshStandardMaterial({ color: '#a3916f' }), // baixo
+      new THREE.MeshStandardMaterial({ map: inviteTexture }), // frente - convite
+      new THREE.MeshStandardMaterial({ color: '#8b6d4e' })  // trás
+    ];
+
+    const geometry = new THREE.BoxGeometry(2, 2, 2);
+    const cube = new THREE.Mesh(geometry, materials);
+    scene.add(cube);
+
+    // Controls para permitir rotacionar manualmente
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.enableZoom = false;
+    controls.minPolarAngle = Math.PI / 4;  // limitar ângulo para não virar cabeça pra baixo
+    controls.maxPolarAngle = Math.PI / 1.8;
+
+    // Sem rotação automática
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    return { scene, camera, renderer, cube };
+  }
+
+  const threeApp = initThree();
+
+  // Mostrar convite 3D
+  function revealInvite() {
     document.getElementById('intro').style.display = 'none';
-    playVideoThenReveal();
+    document.getElementById('videoContainer').style.display = 'none';
+    document.getElementById('threeContainer').style.display = 'block';
+    document.getElementById('info').style.display = 'none';
   }
-}
 
-// Fallback tap triplo
-window.addEventListener('touchstart', () => {
-  if (revealed) return;
-
-  tapCount++;
-  if (tapTimeout) clearTimeout(tapTimeout);
-  tapTimeout = setTimeout(() => {
-    tapCount = 0;
-  }, 600);
-
-  if (tapCount === 3) {
-    revealed = true;
+  // Se quiseres pode trocar para vídeo depois do abanar
+  function playVideoThenReveal() {
+    // Se quiser, podes descomentar para usar o vídeo ao invés do cubo 3D:
+    /*
+    const videoContainer = document.getElementById('videoContainer');
+    const video = document.getElementById('dadosVideo');
+    videoContainer.style.display = 'block';
+    video.play().catch(e => {
+      console.log('Erro a reproduzir o vídeo:', e);
+      revealInvite();
+    });
+    video.onended = () => {
+      revealInvite();
+    };
+    */
+    // Aqui só mostramos direto o convite 3D:
     revealInvite();
   }
-});
 
-// Ativa sensores no primeiro toque
-window.addEventListener('click', () => {
-  startMotionListening();
-});
+  function startMotionListening() {
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission()
+        .then(response => {
+          if (response === 'granted') {
+            window.addEventListener('devicemotion', motionHandler);
+            document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
+          } else {
+            document.getElementById('info').innerText = 'Permissão negada. Usa 3 toques rápidos para abrir.';
+          }
+        })
+        .catch(err => {
+          document.getElementById('info').innerText = 'Erro a pedir permissão. Usa 3 toques rápidos para abrir.';
+        });
+    } else {
+      window.addEventListener('devicemotion', motionHandler);
+      document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
+    }
+  }
+
+  function motionHandler(event) {
+    if (revealed) return;
+
+    let acc = event.accelerationIncludingGravity;
+    if (!acc) return;
+
+    let total = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+    if (total > threshold) {
+      revealed = true;
+      document.getElementById('intro').style.display = 'none';
+      playVideoThenReveal();
+    }
+  }
+
+  // Fallback tap triplo
+  window.addEventListener('touchstart', () => {
+    if (revealed) return;
+
+    tapCount++;
+    if (tapTimeout) clearTimeout(tapTimeout);
+    tapTimeout = setTimeout(() => {
+      tapCount = 0;
+    }, 600);
+
+    if (tapCount === 3) {
+      revealed = true;
+      revealInvite();
+    }
+  });
+
+  // Ativa sensores no primeiro toque
+  window.addEventListener('click', () => {
+    startMotionListening();
+  });
+
 </script>
-
 </body>
 </html>
