@@ -233,8 +233,44 @@ window.addEventListener('touchstart', () => {
 });
 
 // Ativa sensores no primeiro toque
-window.addEventListener('click', () => {
+let sensorsActivated = false;
+
+function startMotionListening() {
+  if (sensorsActivated) return;
+
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    // iOS 13+ precisa pedir permissão explícita
+    DeviceMotionEvent.requestPermission()
+      .then(response => {
+        if (response === 'granted') {
+          window.addEventListener('devicemotion', motionHandler);
+          document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
+          sensorsActivated = true;
+        } else {
+          document.getElementById('info').innerText = 'Permissão negada. Usa 3 toques rápidos para abrir.';
+        }
+      })
+      .catch(() => {
+        document.getElementById('info').innerText = 'Erro a pedir permissão. Usa 3 toques rápidos para abrir.';
+      });
+  } else {
+    // Outros browsers, sem necessidade de pedir permissão
+    window.addEventListener('devicemotion', motionHandler);
+    document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
+    sensorsActivated = true;
+  }
+}
+
+// Pedir permissão no primeiro toque do utilizador
+window.addEventListener('touchend', (e) => {
   startMotionListening();
+}, { once: true });
+
+// Também pode adicionar para click para desktop
+window.addEventListener('click', (e) => {
+  startMotionListening();
+}, { once: true });
+
 });
 </script>
 
