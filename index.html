@@ -48,67 +48,74 @@
     color: #555;
   }
 
-  /* Convite com moldura 3D minimalista */
+  /* Container do convite cubo */
   #conviteContainer {
+    position: relative;
     width: 340px;
     max-height: 420px;
     margin: 40px auto;
     background: #fdfaf6;
-    color: #5b4636;
-    font-family: 'Georgia', serif;
-    border-radius: 20px;
+    border-radius: 25px;
+    box-shadow:
+      0 15px 25px rgba(139,109,78,0.3);
     padding: 40px 50px;
     box-sizing: border-box;
-    position: relative;
+    font-family: 'Georgia', serif;
+    color: #5b4636;
     overflow-y: auto;
-    box-shadow:
-      inset 0 0 40px rgba(139,109,78,0.1),
-      0 15px 30px rgba(0,0,0,0.05);
   }
 
-  /* Bordas 3D - só 3 lados para sugestão de cubo */
+  /* Face frontal do convite */
+  #conviteContent {
+    position: relative;
+    z-index: 3;
+  }
+
+  /* Linhas diagonais que simulam as arestas do cubo */
   #conviteContainer::before,
-  #conviteContainer::after,
-  #conviteContainer > .borderSide {
+  #conviteContainer::after {
     content: "";
     position: absolute;
     background: linear-gradient(45deg, #8b6d4e, #c8b69e);
+    box-shadow: 0 0 8px rgba(139,109,78,0.6);
     border-radius: 2px;
-    box-shadow: 0 0 6px rgba(139,109,78,0.6);
+    z-index: 1;
   }
 
-  /* Borda superior */
+  /* Linha lateral direita (aresta vertical inclinada) */
   #conviteContainer::before {
-    top: 0;
-    left: 10px;
-    right: 30px;
-    height: 6px;
-    transform: skew(-20deg);
-  }
-
-  /* Borda esquerda */
-  #conviteContainer::after {
+    width: 8px;
+    height: 95%;
     top: 10px;
-    bottom: 30px;
-    left: 0;
-    width: 6px;
-    transform: skew(20deg);
+    right: -18px;
+    transform: skew(-25deg);
   }
 
-  /* Borda lateral direita "em profundidade" */
-  #conviteContainer > .borderSide {
-    top: 15px;
-    bottom: 30px;
-    right: 0;
-    width: 6px;
+  /* Linha superior (aresta horizontal inclinada) */
+  #conviteContainer::after {
+    height: 8px;
+    width: 95%;
+    top: -18px;
+    left: 10px;
+    transform: skew(25deg);
+  }
+
+  /* Linha diagonal inferior direita para fechar a "aresta" */
+  #conviteDiagonal {
+    position: absolute;
+    width: 25px;
+    height: 8px;
     background: linear-gradient(135deg, #c8b69e, #8b6d4e);
-    box-shadow: 0 0 8px rgba(139,109,78,0.5);
+    box-shadow: 0 0 6px rgba(139,109,78,0.5);
     border-radius: 2px;
-    transform: skew(-20deg);
+    bottom: -18px;
+    right: -18px;
+    transform: skew(25deg);
+    z-index: 1;
   }
 
-  /* Conteúdo texto */
-  #conviteContainer h1 {
+  /* Texto */
+  #conviteContent h1 {
     font-size: 2.4rem;
     margin-bottom: 15px;
     font-weight: 700;
@@ -116,19 +123,20 @@
     text-transform: uppercase;
     color: #7a5e3c;
   }
-  #conviteContainer p {
+  #conviteContent p {
     font-size: 1.1rem;
     line-height: 1.5;
     margin: 12px 0;
   }
-  #conviteContainer p strong {
+  #conviteContent p strong {
     font-weight: 700;
     color: #8b6d4e;
   }
-  #conviteContainer p.italic {
+  #conviteContent p.italic {
     font-style: italic;
     color: #a69072;
   }
+
 </style>
 </head>
 <body>
@@ -144,12 +152,14 @@
 </div>
 
 <div id="conviteContainer" style="display:none;">
-  <div class="borderSide"></div>
-  <h1>Convite Especial</h1>
-  <p>É com imensa alegria que <strong>Rute Pinheiro</strong> e <strong>Diogo Andrade</strong><br>convidam-te para celebrares a união do seu amor.</p>
-  <p class="italic">"O amor verdadeiro é a jornada mais bela que podemos partilhar."</p>
-  <p>Junta-te a nós no dia <strong>27 de Junho</strong>, em <strong>Cantanhede</strong>, para uma cerimónia íntima e uma festa inesquecível.</p>
-  <p>Esperamos contar contigo para tornar este dia ainda mais especial.</p>
+  <div id="conviteContent">
+    <h1>Convite Especial</h1>
+    <p>É com imensa alegria que <strong>Rute Pinheiro</strong> e <strong>Diogo Andrade</strong><br>convidam-te para celebrares a união do seu amor.</p>
+    <p class="italic">"O amor verdadeiro é a jornada mais bela que podemos partilhar."</p>
+    <p>Junta-te a nós no dia <strong>27 de Junho</strong>, em <strong>Cantanhede</strong>, para uma cerimónia íntima e uma festa inesquecível.</p>
+    <p>Esperamos contar contigo para tornar este dia ainda mais especial.</p>
+  </div>
+  <div id="conviteDiagonal"></div>
 </div>
 
 <div id="info">Se o abanar não funcionar, toca 3 vezes rápido para abrir o convite.</div>
