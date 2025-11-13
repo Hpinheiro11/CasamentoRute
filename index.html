@@ -16,39 +16,39 @@
     flex-direction: column;
     justify-content: center;
   }
-  #intro, #videoContainer {
+  #intro {
     margin: 20px;
+    user-select: none;
   }
   #dados {
     font-size: 100px;
     margin: 40px auto 0;
     animation: tremer 0.15s infinite alternate;
-    user-select: none;
   }
   @keyframes tremer {
     0% { transform: rotate(-7deg); }
     100% { transform: rotate(7deg); }
   }
-  #videoContainer {
-    display: none;
-    margin: 40px auto;
-    text-align: center;
+  #activateButton {
+    margin: 40px auto 10px;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(45deg, #7a5e3c, #bfae8f);
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(139,109,78,0.6);
+    transition: background 0.3s ease;
+    user-select: none;
   }
-  #dadosVideo {
-    width: 320px;
-    height: 320px;
-    border-radius: 12px;
-    box-shadow: 0 0 10px rgba(42,93,52,0.6);
-    display: block;
-    margin: 0 auto;
+  #activateButton:hover {
+    background: linear-gradient(45deg, #a69072, #8b6d4e);
   }
-  #info {
-    margin-top: 30px;
-    font-size: 16px;
-    color: #555;
+  #activateButton:active {
+    transform: scale(0.97);
   }
-
-  /* Convite em "face de dado" simplificada */
   #conviteContainer {
     width: 340px;
     max-height: 400px;
@@ -65,8 +65,8 @@
     font-family: 'Georgia', serif;
     color: #5b4636;
     box-sizing: border-box;
+    display: none;
   }
-
   /* Pontos do dado nos cantos para sugerir o dado */
   #conviteContainer::before,
   #conviteContainer::after,
@@ -79,7 +79,6 @@
     color: #8b6d4e;
     text-shadow: 0 0 1px #5b4636;
   }
-
   #conviteContainer::before {
     top: 20px;
     left: 20px;
@@ -88,7 +87,6 @@
     bottom: 20px;
     right: 20px;
   }
-  /* Pontos laterais para efeito */
   .dot1 {
     top: 50%;
     left: 10px;
@@ -102,8 +100,6 @@
     bottom: 80px;
     left: 10px;
   }
-
-  /* Conteúdo do convite */
   #conviteContainer h1 {
     font-size: 2.4rem;
     margin-bottom: 15px;
@@ -125,6 +121,12 @@
     font-style: italic;
     color: #a69072;
   }
+  #info {
+    margin-top: 20px;
+    font-size: 16px;
+    color: #555;
+    user-select: none;
+  }
 </style>
 </head>
 <body>
@@ -132,14 +134,10 @@
 <div id="intro">
   <h2>🎲 Abana o teu telemóvel para revelar o convite 🎲</h2>
   <div id="dados">🎲🎲</div>
-  <p><em>(Toca no ecrã para ativar os sensores)</em></p>
+  <button id="activateButton">Ativar Sensores</button>
 </div>
 
-<div id="videoContainer">
-  <video id="dadosVideo" src="dados.mp4" playsinline muted></video>
-</div>
-
-<div id="conviteContainer" style="display:none;">
+<div id="conviteContainer">
   <span class="dot1"></span>
   <span class="dot2"></span>
   <span class="dot3"></span>
@@ -153,126 +151,82 @@
 <div id="info">Se o abanar não funcionar, toca 3 vezes rápido para abrir o convite.</div>
 
 <script>
-let threshold = 12;
-let revealed = false;
-let tapCount = 0;
-let tapTimeout = null;
+  let threshold = 12;
+  let revealed = false;
+  let tapCount = 0;
+  let tapTimeout = null;
+  let sensorsActivated = false;
 
-function resetTaps() {
-  tapCount = 0;
-}
+  const activateButton = document.getElementById('activateButton');
 
-function revealInvite() {
-  document.getElementById('intro').style.display = 'none';
-  document.getElementById('videoContainer').style.display = 'none';
-  document.getElementById('conviteContainer').style.display = 'block';
-  document.getElementById('info').style.display = 'none';
-}
-
-function playVideoThenReveal() {
-  const videoContainer = document.getElementById('videoContainer');
-  const video = document.getElementById('dadosVideo');
-  videoContainer.style.display = 'block';
-  video.play().catch(e => {
-    console.log('Erro a reproduzir o vídeo:', e);
-    revealInvite();
-  });
-  video.onended = () => {
-    revealInvite();
-  };
-}
-
-function startMotionListening() {
-  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    DeviceMotionEvent.requestPermission()
-      .then(response => {
-        if (response === 'granted') {
-          window.addEventListener('devicemotion', motionHandler);
-          document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
-        } else {
-          document.getElementById('info').innerText = 'Permissão negada. Usa 3 toques rápidos para abrir.';
-        }
-      })
-      .catch(err => {
-        document.getElementById('info').innerText = 'Erro a pedir permissão. Usa 3 toques rápidos para abrir.';
-      });
-  } else {
-    window.addEventListener('devicemotion', motionHandler);
-    document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
-  }
-}
-
-function motionHandler(event) {
-  if (revealed) return;
-
-  let acc = event.accelerationIncludingGravity;
-  if (!acc) return;
-
-  let total = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
-  if (total > threshold) {
-    revealed = true;
+  function revealInvite() {
     document.getElementById('intro').style.display = 'none';
-    playVideoThenReveal();
+    document.getElementById('conviteContainer').style.display = 'block';
+    document.getElementById('info').style.display = 'none';
   }
-}
 
-// Fallback tap triplo
-window.addEventListener('touchstart', () => {
-  if (revealed) return;
+  function motionHandler(event) {
+    if (revealed) return;
 
-  tapCount++;
-  if (tapTimeout) clearTimeout(tapTimeout);
-  tapTimeout = setTimeout(() => {
-    tapCount = 0;
-  }, 600);
+    let acc = event.accelerationIncludingGravity;
+    if (!acc) return;
 
-  if (tapCount === 3) {
-    revealed = true;
-    revealInvite();
+    let total = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+    if (total > threshold) {
+      revealed = true;
+      revealInvite();
+    }
   }
-});
 
-// Ativa sensores no primeiro toque
-let sensorsActivated = false;
+  function startMotionListening() {
+    if (sensorsActivated) return;
 
-function startMotionListening() {
-  if (sensorsActivated) return;
-
-  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    // iOS 13+ precisa pedir permissão explícita
-    DeviceMotionEvent.requestPermission()
-      .then(response => {
-        if (response === 'granted') {
-          window.addEventListener('devicemotion', motionHandler);
-          document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
-          sensorsActivated = true;
-        } else {
-          document.getElementById('info').innerText = 'Permissão negada. Usa 3 toques rápidos para abrir.';
-        }
-      })
-      .catch(() => {
-        document.getElementById('info').innerText = 'Erro a pedir permissão. Usa 3 toques rápidos para abrir.';
-      });
-  } else {
-    // Outros browsers, sem necessidade de pedir permissão
-    window.addEventListener('devicemotion', motionHandler);
-    document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
-    sensorsActivated = true;
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission()
+        .then(response => {
+          if (response === 'granted') {
+            window.addEventListener('devicemotion', motionHandler);
+            document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
+            sensorsActivated = true;
+            activateButton.style.display = 'none';
+          } else {
+            document.getElementById('info').innerText = 'Permissão negada. Usa 3 toques rápidos para abrir.';
+          }
+        })
+        .catch(() => {
+          document.getElementById('info').innerText = 'Erro a pedir permissão. Usa 3 toques rápidos para abrir.';
+        });
+    } else {
+      window.addEventListener('devicemotion', motionHandler);
+      document.getElementById('info').innerText = 'Sensores ativados! Abana o telemóvel.';
+      sensorsActivated = true;
+      activateButton.style.display = 'none';
+    }
   }
-}
 
-// Pedir permissão no primeiro toque do utilizador
-window.addEventListener('touchend', (e) => {
-  startMotionListening();
-}, { once: true });
+  // Botão para ativar sensores
+  activateButton.addEventListener('click', () => {
+    startMotionListening();
+  });
 
-// Também pode adicionar para click para desktop
-window.addEventListener('click', (e) => {
-  startMotionListening();
-}, { once: true });
+  // Fallback tap triplo para abrir convite
+  window.addEventListener('touchstart', () => {
+    if (revealed) return;
 
-});
+    tapCount++;
+    if (tapTimeout) clearTimeout(tapTimeout);
+    tapTimeout = setTimeout(() => {
+      tapCount = 0;
+    }, 600);
+
+    if (tapCount === 3) {
+      revealed = true;
+      revealInvite();
+      activateButton.style.display = 'none';
+    }
+  });
 </script>
 
 </body>
 </html>
+
