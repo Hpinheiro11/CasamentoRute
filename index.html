@@ -48,62 +48,66 @@
     color: #555;
   }
 
-  /* Convite em "face de dado" simplificada */
+  /* Convite com moldura 3D minimalista */
   #conviteContainer {
     width: 340px;
-    max-height: 400px;
+    max-height: 420px;
     margin: 40px auto;
     background: #fdfaf6;
-    border-radius: 30px;
-    border: 3px solid #8b6d4e;
-    box-shadow:
-      inset 0 0 20px rgba(139,109,78,0.2),
-      0 12px 25px rgba(139,109,78,0.4);
+    color: #5b4636;
+    font-family: 'Georgia', serif;
+    border-radius: 20px;
     padding: 40px 50px;
+    box-sizing: border-box;
     position: relative;
     overflow-y: auto;
-    font-family: 'Georgia', serif;
-    color: #5b4636;
-    box-sizing: border-box;
+    box-shadow:
+      inset 0 0 40px rgba(139,109,78,0.1),
+      0 15px 30px rgba(0,0,0,0.05);
   }
 
-  /* Pontos do dado nos cantos para sugerir o dado */
+  /* Bordas 3D - só 3 lados para sugestão de cubo */
   #conviteContainer::before,
   #conviteContainer::after,
-  #conviteContainer > .dot1,
-  #conviteContainer > .dot2,
-  #conviteContainer > .dot3 {
-    content: "•";
+  #conviteContainer > .borderSide {
+    content: "";
     position: absolute;
-    font-size: 2.8rem;
-    color: #8b6d4e;
-    text-shadow: 0 0 1px #5b4636;
+    background: linear-gradient(45deg, #8b6d4e, #c8b69e);
+    border-radius: 2px;
+    box-shadow: 0 0 6px rgba(139,109,78,0.6);
   }
 
+  /* Borda superior */
   #conviteContainer::before {
-    top: 20px;
-    left: 20px;
-  }
-  #conviteContainer::after {
-    bottom: 20px;
-    right: 20px;
-  }
-  /* Pontos laterais para efeito */
-  .dot1 {
-    top: 50%;
+    top: 0;
     left: 10px;
-    transform: translateY(-50%);
-  }
-  .dot2 {
-    top: 80px;
-    right: 10px;
-  }
-  .dot3 {
-    bottom: 80px;
-    left: 10px;
+    right: 30px;
+    height: 6px;
+    transform: skew(-20deg);
   }
 
-  /* Conteúdo do convite */
+  /* Borda esquerda */
+  #conviteContainer::after {
+    top: 10px;
+    bottom: 30px;
+    left: 0;
+    width: 6px;
+    transform: skew(20deg);
+  }
+
+  /* Borda lateral direita "em profundidade" */
+  #conviteContainer > .borderSide {
+    top: 15px;
+    bottom: 30px;
+    right: 0;
+    width: 6px;
+    background: linear-gradient(135deg, #c8b69e, #8b6d4e);
+    box-shadow: 0 0 8px rgba(139,109,78,0.5);
+    border-radius: 2px;
+    transform: skew(-20deg);
+  }
+
+  /* Conteúdo texto */
   #conviteContainer h1 {
     font-size: 2.4rem;
     margin-bottom: 15px;
@@ -140,9 +144,7 @@
 </div>
 
 <div id="conviteContainer" style="display:none;">
-  <span class="dot1"></span>
-  <span class="dot2"></span>
-  <span class="dot3"></span>
+  <div class="borderSide"></div>
   <h1>Convite Especial</h1>
   <p>É com imensa alegria que <strong>Rute Pinheiro</strong> e <strong>Diogo Andrade</strong><br>convidam-te para celebrares a união do seu amor.</p>
   <p class="italic">"O amor verdadeiro é a jornada mais bela que podemos partilhar."</p>
