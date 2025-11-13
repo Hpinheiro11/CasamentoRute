@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Convite Digital - Jogo do Amor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+  body {
+    margin: 0; padding: 0;
+    background: linear-gradient(135deg, #d1f0d7, #f0fff4);
+    font-family: 'Poppins', sans-serif;
+    color: #2a5d34;
+    text-align: center;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  #intro {
+    margin-top: 50px;
+  }
+  #dados {
+    font-size: 100px;
+    margin: 40px auto 0;
+    animation: tremer 0.15s infinite alternate;
+    user-select: none;
+  }
+  @keyframes tremer {
+    0% { transform: rotate(-7deg); }
+    100% { transform: rotate(7deg); }
+  }
+  #convite {
+    display: none;
+    margin: 40px 20px 0;
+    animation: fadeIn 1.3s ease forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  h1 {
+    font-weight: 600;
+    font-size: 32px;
+    margin-bottom: 10px;
+  }
+  p {
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 1.4;
+    margin: 8px auto;
+    max-width: 350px;
+  }
+  /* Fundo com elementos de jogo */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="25" cy="25" r="8" stroke="%232a5d34" stroke-width="2"/><circle cx="75" cy="75" r="8" stroke="%232a5d34" stroke-width="2"/><rect x="40" y="40" width="20" height="20" stroke="%232a5d34" stroke-width="2" rx="5"/><path d="M10 90 L30 70 M90 10 L70 30" stroke="%232a5d34" stroke-width="2"/></svg>');
+    background-repeat: repeat;
+    background-size: 100px 100px;
+    opacity: 0.1;
+    z-index: -1;
+  }
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <h2>🎲 Abana o teu telemóvel para revelar o convite 🎲</h2>
+  <div id="dados">🎲🎲</div>
+</div>
+
+<div id="convite">
+  <h1>🎉 Estás convidado! 🎉</h1>
+  <p>Prepara os dados, abana o telemóvel e vem jogar connosco o jogo do amor! 💚</p>
+  <p><strong>Rute Pinheiro & Diogo Andrade</strong></p>
+  <p>Casam-se a 27 de Junho em Cantanhede — e a festa vai ser de outro nível!</p>
+</div>
+
+<audio id="musica" src="instrumental.mp3" loop></audio>
+
+<script>
+let threshold = 15;
+let revealed = false;
+
+function pedirPermissao() {
+  if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    DeviceMotionEvent.requestPermission().catch(() => {}).then(permissionState => {
+      if(permissionState === 'granted') {
+        window.addEventListener('devicemotion', motionHandler);
+      }
+    });
+  } else {
+    window.addEventListener('devicemotion', motionHandler);
+  }
+}
+
+function motionHandler(event) {
+  if (revealed) return;
+  let acc = event.accelerationIncludingGravity;
+  if(!acc) return;
+  let total = Math.abs(acc.x) + Math.abs(acc.y) + Math.abs(acc.z);
+  if(total > threshold) {
+    revealed = true;
+    document.getElementById('intro').style.display = 'none';
+    document.getElementById('convite').style.display = 'block';
+    document.getElementById('musica').play();
+  }
+}
+
+window.addEventListener('click', pedirPermissao);
+</script>
+
+</body>
+</html>
